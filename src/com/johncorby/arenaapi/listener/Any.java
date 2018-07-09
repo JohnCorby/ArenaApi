@@ -1,4 +1,4 @@
-package com.johncorby.arenaapi.event;
+package com.johncorby.arenaapi.listener;
 
 import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.coreapi.util.MessageHandler;

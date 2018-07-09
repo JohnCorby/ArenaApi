@@ -1,12 +1,16 @@
 package com.johncorby.arenaapi;
 
+import com.johncorby.arenaapi.arena.Arena;
+import com.johncorby.arenaapi.arena.ArenaEvents;
 import com.johncorby.arenaapi.command.*;
-import com.johncorby.arenaapi.event.Block;
-import com.johncorby.arenaapi.event.Player;
+import com.johncorby.arenaapi.listener.Block;
+import com.johncorby.arenaapi.listener.Player;
 import com.johncorby.coreapi.CoreApiPlugin;
 import com.johncorby.coreapi.command.BaseCommand;
+import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 
 import java.util.Arrays;
@@ -25,7 +29,37 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
     }
 
     @Override
-    public abstract String getMessagePrefix();
+    public void onEnable() {
+        super.onEnable();
+
+        Arena.arenaEvents = getArenaEvents();
+
+        // Set up config
+        getConfig().options().copyDefaults(true);
+        saveConfig();
+
+        // Load stuff from config
+        WORLD = getServer().getWorld(getConfig().getString("World"));
+
+        for (String name : Arena.arenaSection.getKeys(false)) {
+            ConfigurationSection arena = Arena.arenaSection.getConfigurationSection(name);
+            Integer[] region = arena.getIntegerList("Region").toArray(new Integer[0]);
+            Integer[] signLoc = arena.getIntegerList("SignLoc").toArray(new Integer[0]);
+            new Arena(name, region, signLoc);
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
+
+        // Stop all arenas
+        for (Arena a : Arena.getArenas()) {
+            for (org.bukkit.entity.Player p : a.getPlayers())
+                MessageHandler.warn(p, "You have been forced out of the arena because the plugin was reloaded (probably for debugging)");
+            a.setState(Arena.State.STOPPED);
+        }
+    }
 
     @Override
     public BaseCommand[] getCommands() {
@@ -49,6 +83,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
                 new Block(),
                 new Player(),
         };
-
     }
+
+    public abstract ArenaEvents getArenaEvents();
 }

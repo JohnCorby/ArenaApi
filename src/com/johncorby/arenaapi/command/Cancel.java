@@ -1,9 +1,9 @@
 package com.johncorby.arenaapi.command;
 
+import com.johncorby.arenaapi.arena.SetRegion;
 import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.entity.Player;
-import com.johncorby.arenaapi.arena.SetRegion;
 
 public class Cancel extends BaseCommand {
     public Cancel() {

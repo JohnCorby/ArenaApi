@@ -34,7 +34,8 @@ import static com.johncorby.coreapi.util.Common.randInt;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
 
 public class Arena extends Identifiable<String> {
-    public final static ConfigurationSection arenaSection = PLUGIN.getConfig().getConfigurationSection("Arenas");
+    public static final ConfigurationSection arenaSection = PLUGIN.getConfig().getConfigurationSection("Arenas");
+    public static ArenaEvents arenaEvents;
     private State state = State.STOPPED;
     private Sign sign;
     private Integer[] region;
@@ -138,12 +139,12 @@ public class Arena extends Identifiable<String> {
         if (this.state == state) return;
         switch (state) {
             case OPEN:
-                StateChange.on(this, state);
+                arenaEvents.onOpen(this);
                 break;
             case RUNNING:
                 broadcast("Game start");
 
-                StateChange.on(this, state);
+                arenaEvents.onRunning(this);
                 break;
             case STOPPED:
                 // Remove entities
@@ -152,7 +153,7 @@ public class Arena extends Identifiable<String> {
 
                 setBlocks();
 
-                StateChange.on(this, state);
+                arenaEvents.onStopped(this);
                 break;
         }
         this.state = state;
@@ -225,7 +226,7 @@ public class Arena extends Identifiable<String> {
             MessageHandler.info(p, "Joined arena " + get());
             broadcast(p.getName() + " joined the arena", p);
 
-            JoinLeave.onJoin(p, this);
+            arenaEvents.onJoin(this, p);
         } else {
             // Don't join arena if in it
             if (aI == this) return false;
@@ -256,7 +257,7 @@ public class Arena extends Identifiable<String> {
             broadcast(p.getName() + " left the arena", p);
             MessageHandler.info(p, "Left arena " + get());
 
-            JoinLeave.onLeave(p, this);
+            arenaEvents.onLeave(this, p);
         } else entity.remove();
 
         return contains(entity);
@@ -324,7 +325,7 @@ public class Arena extends Identifiable<String> {
 
             //state = State.STOPPED;
             //updateSign();
-            debug("Got blocks in " + time + " ms");
+            debug("Got blocks async in " + time + " ms");
         });
     }
 
@@ -347,7 +348,7 @@ public class Arena extends Identifiable<String> {
 
             //state = State.STOPPED;
             //updateSign();
-            debug("Set blocks in " + time + " ms");
+            debug("Set blocks async in " + time + " ms");
         });
     }
 
