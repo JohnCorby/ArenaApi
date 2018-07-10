@@ -60,7 +60,7 @@ public class Arena extends Identifiable<String> {
     }
 
     public static Arena get(String identity) {
-        return (Arena) get(Arena.class, identity);
+        return get(Arena.class, identity);
     }
 
     public static Set<Arena> getArenas() {

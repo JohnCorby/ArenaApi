@@ -3,7 +3,6 @@ package com.johncorby.arenaapi.listener;
 import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.arenaapi.arena.SetRegion;
 import com.johncorby.coreapi.util.MessageHandler;
-import com.johncorby.coreapi.util.Runnable;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;

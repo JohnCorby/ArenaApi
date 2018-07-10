@@ -16,7 +16,7 @@ public class SetRegion extends Identifiable<Player> {
     }
 
     public static SetRegion get(Player identity) {
-        return (SetRegion) get(SetRegion.class, identity);
+        return get(SetRegion.class, identity);
     }
 
     protected boolean create(Player identity, String name, boolean add) throws IllegalStateException {
