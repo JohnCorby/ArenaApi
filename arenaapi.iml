@@ -26,7 +26,7 @@
     <orderEntry type="module-library">
       <library name="Maven: com.boydti:fawe:RELEASE">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../Singleplayer&#10;                Server/plugins/FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
