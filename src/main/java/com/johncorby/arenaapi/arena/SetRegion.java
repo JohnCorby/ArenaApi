@@ -3,23 +3,26 @@ package com.johncorby.arenaapi.arena;
 import com.johncorby.coreapi.util.MessageHandler;
 import com.johncorby.coreapi.util.storedclass.Identifiable;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class SetRegion extends Identifiable<Player> {
+    public final Integer[] region = new Integer[4];
     public int step;
     public String name;
-    public Integer[] region = new Integer[4];
     private boolean add;
 
-    public SetRegion(Player identity, String name, boolean add) {
+    public SetRegion(@NotNull Player identity, @NotNull String name, boolean add) {
         super(identity);
         create(identity, name, add);
     }
 
+    @Nullable
     public static SetRegion get(Player identity) {
         return get(SetRegion.class, identity);
     }
 
-    protected boolean create(Player identity, String name, boolean add) throws IllegalStateException {
+    protected boolean create(@NotNull Player identity, @NotNull String name, boolean add) throws IllegalStateException {
         // Error if arena doesn't exist
         if (Arena.get(name) == null && !add) {
             MessageHandler.error(identity, "Arena " + name + " does not exist");

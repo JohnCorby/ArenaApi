@@ -3,6 +3,7 @@ package com.johncorby.arenaapi.listener;
 import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.arenaapi.arena.SetRegion;
 import com.johncorby.coreapi.util.MessageHandler;
+import com.johncorby.coreapi.util.Runnable;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -12,10 +13,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class Player implements Listener {
     @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
+    public void onInteract(@NotNull PlayerInteractEvent event) {
         // If left clicked block
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             // If setting region
@@ -45,7 +47,7 @@ public class Player implements Listener {
 
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
+    public void onQuit(@NotNull PlayerQuitEvent event) {
         org.bukkit.entity.Player player = event.getPlayer();
         // Try to get arena and make player leave it
         Arena aI = Arena.arenaIn(player);
@@ -55,12 +57,11 @@ public class Player implements Listener {
 
     // Notify about bugs being present
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(@NotNull PlayerJoinEvent event) {
         new Runnable() {
             @Override
             public void run() {
-                MessageHandler.warn(event.getPlayer(),
-                        "=========================================",
+                MessageHandler.warn(event.getPlayer(), "=========================================",
                         "Post bugs/features at https://github.com/JohnCorby/GravityGuild/issues",
                         "=========================================");
             }

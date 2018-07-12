@@ -9,11 +9,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class Block implements Listener {
     // For setting virtualredstone signs
     @EventHandler
-    public void onBreak(BlockBreakEvent event) {
+    public void onBreak(@NotNull BlockBreakEvent event) {
         // Ignore if not sign
         if (!(event.getBlock().getState() instanceof Sign)) return;
         Sign s = (Sign) event.getBlock().getState();
@@ -30,13 +31,13 @@ public class Block implements Listener {
 
         // Remove sign from arena
         a.setSign(null);
-        MessageHandler.info(event.getPlayer(), "Removed sign for " + Arena.get());
+        MessageHandler.info(event.getPlayer(), "Removed sign for " + a.get());
     }
 
 
     // For setting virtualredstone signs
     @EventHandler
-    public void onSignChange(SignChangeEvent event) {
+    public void onSignChange(@NotNull SignChangeEvent event) {
         // Ignore normal signs
         if (!event.getLine(0).equalsIgnoreCase("[virtualredstone]")) return;
 
@@ -56,7 +57,7 @@ public class Block implements Listener {
 
         // Set sign for arena
         event.setLine(0, ChatColor.YELLOW + "[GravityGuild]");
-        event.setLine(1, Arena.get());
+        event.setLine(1, a.get());
         event.setLine(2, a.getState().get());
         event.setLine(3, Common.toStr(a.getPlayers().size()));
         a.setSign((Sign) event.getBlock().getState());

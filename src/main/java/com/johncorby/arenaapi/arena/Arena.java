@@ -9,6 +9,7 @@ import com.johncorby.coreapi.util.storedclass.Identifiable;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BlockType;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.world.World;
@@ -20,8 +21,11 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -36,10 +40,12 @@ import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
 public class Arena extends Identifiable<String> {
     public static final ConfigurationSection arenaSection = PLUGIN.getConfig().getConfigurationSection("Arenas");
     public static ArenaEvents arenaEvents;
+    private final ConfigurationSection configLoc;
+    @NotNull
     private State state = State.STOPPED;
+    @Nullable
     private Sign sign;
     private Integer[] region;
-    private ConfigurationSection configLoc;
 
     public Arena(String identity) {
         super(identity.toLowerCase());
@@ -59,12 +65,14 @@ public class Arena extends Identifiable<String> {
         setSign((Sign) l.getBlock().getState());
     }
 
+    @Nullable
     public static Arena get(String identity) {
         return get(Arena.class, identity);
     }
 
+    @NotNull
     public static Set<Arena> getArenas() {
-        return (Set<Arena>) classes.get(Arena.class);
+        return classes.get(Arena.class);
     }
 
     // Get arena names
@@ -74,23 +82,27 @@ public class Arena extends Identifiable<String> {
     }
 
     // Get arena entity is in
-    public static Arena arenaIn(Entity entity) {
+    @Nullable
+    public static Arena arenaIn(@Nullable Entity entity) {
         if (entity == null) return null;
         return arenaIn(entity.getLocation());
     }
 
     // Get arena block is in
+    @Nullable
     public static Arena arenaIn(Block block) {
         return arenaIn(block.getState());
     }
 
-    public static Arena arenaIn(BlockState block) {
+    @Nullable
+    public static Arena arenaIn(@Nullable BlockState block) {
         if (block == null) return null;
         return arenaIn(block.getLocation());
     }
 
     // Get arena location is in
-    public static Arena arenaIn(Location location) {
+    @Nullable
+    public static Arena arenaIn(@Nullable Location location) {
         if (location == null || location.getWorld() != WORLD) return null;
         for (Arena a : getArenas())
             if (a.contains(location)) return a;
@@ -109,11 +121,11 @@ public class Arena extends Identifiable<String> {
 
     // Message of type to players in arena
     public void broadcast(Object message) {
-        broadcast(message, null);
+        broadcast(message, (Player) null);
     }
 
     // Message of type to players in arena except
-    public void broadcast(Object message, Player... except) {
+    public void broadcast(Object message, @Nullable Player... except) {
         if (except == null) except = new Player[0];
         for (Entity entity : getEntities())
             if (entity instanceof Player && !Arrays.asList(except).contains(entity))
@@ -131,11 +143,12 @@ public class Arena extends Identifiable<String> {
                 .collect(Collectors.toSet());
     }
 
+    @NotNull
     public State getState() {
         return state;
     }
 
-    public void setState(State state) {
+    public void setState(@NotNull State state) {
         if (this.state == state) return;
         switch (state) {
             case OPEN:
@@ -173,11 +186,12 @@ public class Arena extends Identifiable<String> {
         getBlocks();
     }
 
+    @Nullable
     public Sign getSign() {
         return sign;
     }
 
-    public void setSign(Sign sign) {
+    public void setSign(@Nullable Sign sign) {
         this.sign = sign;
 
         // Try to set config signLoc from sign
@@ -263,7 +277,7 @@ public class Arena extends Identifiable<String> {
         return contains(entity);
     }
 
-    public boolean contains(Location location) {
+    public boolean contains(@NotNull Location location) {
         Integer[] l = {location.getBlockX(), location.getBlockZ()};
         return state != State.STOPPED &&
                 location.getWorld() == WORLD &&
@@ -273,16 +287,16 @@ public class Arena extends Identifiable<String> {
                 l[1] <= region[3];
     }
 
-    public boolean contains(Entity entity) {
+    public boolean contains(@Nullable Entity entity) {
         if (entity == null) return false;
         return contains(entity.getLocation());
     }
 
-    public boolean contains(Block block) {
+    public boolean contains(@NotNull Block block) {
         return contains(block.getState());
     }
 
-    public boolean contains(BlockState block) {
+    public boolean contains(@Nullable BlockState block) {
         if (block == null) return false;
         return contains(block.getLocation());
     }
@@ -340,7 +354,9 @@ public class Arena extends Identifiable<String> {
                     File file = new File(PLUGIN.getDataFolder() + "/" + get() + ".schematic");
                     World world = new BukkitWorld(WORLD);
                     Vector pos1 = new Vector(region[0], 0, region[1]);
-                    ClipboardFormat.SCHEMATIC.load(file).paste(world, pos1, false, true, null);
+                    //ClipboardFormat.SCHEMATIC.load(file).paste(world, pos1, false, true, null);
+                    Clipboard clipboard = ClipboardFormat.SCHEMATIC.getReader(new FileInputStream(file)).read(world.getWorldData());
+                    new Schematic(clipboard).paste(world, pos1, false, true, null);
                 } catch (Exception e) {
                     error(getStackTrace(e));
                 }
@@ -353,7 +369,7 @@ public class Arena extends Identifiable<String> {
     }
 
     // Edited from FAWE
-    public void tpToRandom(Player player) {
+    public void tpToRandom(@NotNull Player player) {
         Location l = new Location(WORLD,
                 randInt(region[0], region[2]),
                 randInt(0, 250),
@@ -410,6 +426,7 @@ public class Arena extends Identifiable<String> {
         player.teleport(l);
     }
 
+    @NotNull
     @Override
     public ArrayList<String> getDebug() {
         ArrayList<String> r = new ArrayList<>();
@@ -421,7 +438,7 @@ public class Arena extends Identifiable<String> {
         r.add("Region: " +
                 (region == null ? "N/A" : String.format("(%s, %s), (%s, %s)", region[0], region[1], region[2], region[3])));
         r.add("SignLoc: " +
-                (sign == null ? "N/A" : String.format("(%s, %s, %s)", s.getBlockX(), s.getBlockY(), s.getBlockZ())));
+                (s == null ? "N/A" : String.format("(%s, %s, %s)", s.getBlockX(), s.getBlockY(), s.getBlockZ())));
 
         Set<Entity> el = getEntities();
         r.add("Entities: " + (el.isEmpty() ? "None" : ""));
@@ -443,7 +460,7 @@ public class Arena extends Identifiable<String> {
         RUNNING(false),
         STOPPED(true);
 
-        private boolean joinable;
+        private final boolean joinable;
 
         State(boolean joinable) {
             this.joinable = joinable;

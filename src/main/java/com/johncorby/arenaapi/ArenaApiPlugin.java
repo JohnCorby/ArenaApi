@@ -12,15 +12,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class ArenaApiPlugin extends CoreApiPlugin {
+    public static final String[] overridePlayers = {"johncorby", "funkymunky111"};
     public static World WORLD;
-
-    public static String[] overridePlayers = {"johncorby", "funkymunky111"};
 
     public static Set<org.bukkit.entity.Player> getOverridePlayers() {
         return Arrays.stream(overridePlayers)
@@ -61,6 +61,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         }
     }
 
+    @NotNull
     @Override
     public BaseCommand[] getCommands() {
         return new BaseCommand[]{
@@ -77,6 +78,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         };
     }
 
+    @NotNull
     @Override
     public Listener[] getListeners() {
         return new Listener[]{
@@ -85,5 +87,6 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         };
     }
 
+    @NotNull
     public abstract ArenaEvents getArenaEvents();
 }
