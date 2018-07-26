@@ -1,11 +1,8 @@
 package com.johncorby.arenaapi.listener;
 
 import com.johncorby.arenaapi.arena.Arena;
-import com.johncorby.arenaapi.arena.SetRegion;
 import com.johncorby.coreapi.util.MessageHandler;
 import com.johncorby.coreapi.util.Runnable;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,23 +10,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.NotNull;
 
 public class Player implements Listener {
     @EventHandler
-    public void onInteract(@NotNull PlayerInteractEvent event) {
-        // If left clicked block
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            // If setting region
-            SetRegion setRegion = SetRegion.get(event.getPlayer());
-            if (setRegion != null) {
-                // Call next for region
-                Location loc = event.getClickedBlock().getLocation();
-                setRegion.next(loc.getBlockX(), loc.getBlockZ());
-                event.setCancelled(true);
-            }
-        }
-
+    public void onInteract(PlayerInteractEvent event) {
         // If right clicked block
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             // Ignore if not sign
@@ -37,7 +21,7 @@ public class Player implements Listener {
             Sign s = (Sign) event.getClickedBlock().getState();
 
             // Ignore normal signs
-            if (!s.getLine(0).equalsIgnoreCase(ChatColor.YELLOW + "[GravityGuild]")) return;
+            if (!s.getLine(0).equalsIgnoreCase(MessageHandler.prefix)) return;
 
             // Try to join game
             Arena.get(s.getLine(1)).add(event.getPlayer());
@@ -47,7 +31,7 @@ public class Player implements Listener {
 
 
     @EventHandler
-    public void onQuit(@NotNull PlayerQuitEvent event) {
+    public void onQuit(PlayerQuitEvent event) {
         org.bukkit.entity.Player player = event.getPlayer();
         // Try to get arena and make player leave it
         Arena aI = Arena.arenaIn(player);
@@ -57,7 +41,7 @@ public class Player implements Listener {
 
     // Notify about bugs being present
     @EventHandler
-    public void onJoin(@NotNull PlayerJoinEvent event) {
+    public void onJoin(PlayerJoinEvent event) {
         new Runnable() {
             @Override
             public void run() {

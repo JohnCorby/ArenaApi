@@ -5,7 +5,6 @@ import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.command.TabCompleteHandler;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class Delete extends BaseCommand {
     public Delete() {
@@ -14,7 +13,7 @@ public class Delete extends BaseCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull Player sender, @NotNull String[] args) {
+    public boolean onCommand(Player sender, String[] args) {
         // Error if no name given
         if (args.length == 0) {
             MessageHandler.error(sender, "You must supply an arena name");

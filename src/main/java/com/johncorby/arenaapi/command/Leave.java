@@ -4,7 +4,6 @@ import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class Leave extends BaseCommand {
     public Leave() {
@@ -12,7 +11,7 @@ public class Leave extends BaseCommand {
     }
 
     @Override
-    public boolean onCommand(@NotNull Player sender, String[] args) {
+    public boolean onCommand(Player sender, String[] args) {
         // Try to get arena that player is in
         Arena aI = Arena.arenaIn(sender);
         if (aI == null) {

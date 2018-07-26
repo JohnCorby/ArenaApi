@@ -5,6 +5,7 @@ import com.boydti.fawe.util.TaskManager;
 import com.johncorby.arenaapi.command.Lobby;
 import com.johncorby.coreapi.util.Common;
 import com.johncorby.coreapi.util.MessageHandler;
+import com.johncorby.coreapi.util.storedclass.ConfigIdent;
 import com.johncorby.coreapi.util.storedclass.Identifiable;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BlockType;
@@ -16,148 +17,117 @@ import com.sk89q.worldedit.world.World;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.johncorby.arenaapi.ArenaApiPlugin.WORLD;
 import static com.johncorby.arenaapi.ArenaApiPlugin.getOverridePlayers;
 import static com.johncorby.coreapi.CoreApiPlugin.PLUGIN;
-import static com.johncorby.coreapi.util.Common.randInt;
+import static com.johncorby.coreapi.util.Common.*;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
 
-public class Arena extends Identifiable<String> {
-    public static final ConfigurationSection arenaSection = PLUGIN.getConfig().getConfigurationSection("Arenas");
-    public static ArenaEvents arenaEvents;
-    private final ConfigurationSection configLoc;
-    @NotNull
+public class Arena extends ConfigIdent<String> {
+    public static ArenaEvents ARENA_EVENTS;
     private State state = State.STOPPED;
-    @Nullable
+
     private Sign sign;
     private Integer[] region;
 
     public Arena(String identity) {
         super(identity.toLowerCase());
-        configLoc = arenaSection.createSection(identity);
+        create();
     }
 
-    // Constructor and sets config
-    public Arena(String identity, Integer[] region, Integer[] signLoc) {
-        super(identity.toLowerCase());
-        configLoc = arenaSection.getConfigurationSection(identity);
-
-        setRegion(region);
-
-        // Try to get sign from config signLoc
-        if (signLoc.length == 0) return;
-        Location l = new Location(WORLD, signLoc[0], signLoc[1], signLoc[2]);
-        setSign((Sign) l.getBlock().getState());
+    public Arena(Map<String, Object> map) {
+        super(map);
     }
 
-    @Nullable
     public static Arena get(String identity) {
         return get(Arena.class, identity);
     }
 
-    @NotNull
     public static Set<Arena> getArenas() {
-        return classes.get(Arena.class);
+        return getClasses().get(Arena.class);
     }
 
     // Get arena names
     public static Set<String> getNames() {
-        //if (arenas == null) return null;
-        return getArenas().stream().map(Identifiable::get).collect(Collectors.toSet());
+        return toSet(map(getArenas(), Identifiable::get));
     }
 
     // Get arena entity is in
-    @Nullable
-    public static Arena arenaIn(@Nullable Entity entity) {
-        if (entity == null) return null;
-        return arenaIn(entity.getLocation());
-    }
-
-    // Get arena block is in
-    @Nullable
-    public static Arena arenaIn(Block block) {
-        return arenaIn(block.getState());
-    }
-
-    @Nullable
-    public static Arena arenaIn(@Nullable BlockState block) {
-        if (block == null) return null;
-        return arenaIn(block.getLocation());
-    }
-
-    // Get arena location is in
-    @Nullable
-    public static Arena arenaIn(@Nullable Location location) {
-        if (location == null || location.getWorld() != WORLD) return null;
+    public static Arena arenaIn(Entity entity) {
+        if (entity == null || entity.getWorld() != WORLD) return null;
         for (Arena a : getArenas())
-            if (a.contains(location)) return a;
+            if (a.contains(entity)) return a;
         return null;
     }
 
     @Override
     public boolean dispose() {
-        arenaSection.set(get(), null);
-        PLUGIN.saveConfig();
+        if (!super.dispose()) return false;
+        configRemove();
 
         new File(PLUGIN.getDataFolder() + "/" + get() + ".schematic").delete();
 
-        return super.dispose();
+        return true;
     }
 
-    // Message of type to players in arena
+    public Set<Entity> getEntities() {
+        return toSet(filter(WORLD.getEntities(), this::contains));
+    }
+
+    public Set<Player> getPlayers() {
+        return toSet(map(filter(getEntities(), e -> e instanceof Player), e -> (Player) e));
+    }
+
+    public boolean contains(Entity entity) {
+        if (entity == null) return false;
+        Integer[] l = {entity.getLocation().getBlockX(), entity.getLocation().getBlockZ()};
+        return state != State.STOPPED &&
+                entity.getWorld() == WORLD &&
+                l[0] >= region[0] &&
+                l[0] <= region[2] &&
+                l[1] >= region[1] &&
+                l[1] <= region[3];
+    }
+
+    // Message to players in arena
     public void broadcast(Object message) {
         broadcast(message, (Player) null);
     }
 
-    // Message of type to players in arena except
-    public void broadcast(Object message, @Nullable Player... except) {
-        if (except == null) except = new Player[0];
-        for (Entity entity : getEntities())
-            if (entity instanceof Player && !Arrays.asList(except).contains(entity))
-                MessageHandler.info(entity, message);
+    // Message to players in arena except
+    public void broadcast(Object message, Player... except) {
+        Set<Player> es = toSet(except);
+        for (Player p : getPlayers())
+            if (!es.contains(p))
+                MessageHandler.info(p, message);
     }
 
-    public Set<Entity> getEntities() {
-        return WORLD.getEntities().stream().filter(this::contains).collect(Collectors.toSet());
-    }
 
-    public Set<Player> getPlayers() {
-        return getEntities().stream()
-                .filter(e -> e instanceof Player)
-                .map(e -> (Player) e)
-                .collect(Collectors.toSet());
-    }
-
-    @NotNull
     public State getState() {
         return state;
     }
 
-    public void setState(@NotNull State state) {
+    public void setState(State state) {
         if (this.state == state) return;
         switch (state) {
             case OPEN:
-                arenaEvents.onOpen(this);
+                ARENA_EVENTS.onOpen(this);
                 break;
             case RUNNING:
                 broadcast("Game start");
 
-                arenaEvents.onRunning(this);
+                ARENA_EVENTS.onRunning(this);
                 break;
             case STOPPED:
                 // Remove entities
@@ -166,7 +136,7 @@ public class Arena extends Identifiable<String> {
 
                 setBlocks();
 
-                arenaEvents.onStopped(this);
+                ARENA_EVENTS.onStopped(this);
                 break;
         }
         this.state = state;
@@ -179,32 +149,25 @@ public class Arena extends Identifiable<String> {
     }
 
     public void setRegion(Integer[] region) {
+        if (region == null) return;
+
         this.region = region;
-        configLoc.set("Region", region);
-        PLUGIN.saveConfig();
+        configAdd();
 
         getBlocks();
     }
 
-    @Nullable
+
     public Sign getSign() {
         return sign;
     }
 
-    public void setSign(@Nullable Sign sign) {
+    public void setSign(Sign sign) {
+        if (sign == null) return;
+
         this.sign = sign;
-
-        // Try to set config signLoc from sign
-        if (sign == null)
-            configLoc.set("SignLoc", null);
-        else {
-            Location l = sign.getLocation();
-            Integer[] signLoc = new Integer[]{l.getBlockX(), l.getBlockY(), l.getBlockZ()};
-            configLoc.set("SignLoc", signLoc);
-
-            updateSign();
-        }
-        PLUGIN.saveConfig();
+        updateSign();
+        configAdd();
     }
 
     public boolean add(Entity entity) {
@@ -225,6 +188,7 @@ public class Arena extends Identifiable<String> {
                 MessageHandler.error(p, "You're already in arena " + get());
                 return false;
             }
+
             // Leave arena if in one
             if (aI != null) aI.remove(p);
 
@@ -234,13 +198,13 @@ public class Arena extends Identifiable<String> {
             // Start arena if it's stopped
             if (state == State.STOPPED) setState(State.OPEN);
 
-            updateSign();
-
             // Send join messages
             MessageHandler.info(p, "Joined arena " + get());
             broadcast(p.getName() + " joined the arena", p);
 
-            arenaEvents.onJoin(this, p);
+            updateSign();
+
+            ARENA_EVENTS.onJoin(this, p);
         } else {
             // Don't join arena if in it
             if (aI == this) return false;
@@ -262,52 +226,29 @@ public class Arena extends Identifiable<String> {
 
             // Stop arena if no more players
             if (getPlayers().size() == 0) setState(State.STOPPED);
+
             // Stop arena if running and less than 2 players
             if (state == State.RUNNING && getPlayers().size() < 2) setState(State.STOPPED);
-
-            updateSign();
 
             // Send leave messages
             broadcast(p.getName() + " left the arena", p);
             MessageHandler.info(p, "Left arena " + get());
 
-            arenaEvents.onLeave(this, p);
+            updateSign();
+
+            ARENA_EVENTS.onLeave(this, p);
         } else entity.remove();
 
-        return contains(entity);
-    }
-
-    public boolean contains(@NotNull Location location) {
-        Integer[] l = {location.getBlockX(), location.getBlockZ()};
-        return state != State.STOPPED &&
-                location.getWorld() == WORLD &&
-                l[0] >= region[0] &&
-                l[0] <= region[2] &&
-                l[1] >= region[1] &&
-                l[1] <= region[3];
-    }
-
-    public boolean contains(@Nullable Entity entity) {
-        if (entity == null) return false;
-        return contains(entity.getLocation());
-    }
-
-    public boolean contains(@NotNull Block block) {
-        return contains(block.getState());
-    }
-
-    public boolean contains(@Nullable BlockState block) {
-        if (block == null) return false;
-        return contains(block.getLocation());
+        return !contains(entity);
     }
 
     // Update sign
     private void updateSign() {
         if (sign == null) return;
-        sign.setLine(0, ChatColor.YELLOW + "[GravityGuild]");
+        sign.setLine(0, MessageHandler.prefix);
         sign.setLine(1, get());
         sign.setLine(2, state.get());
-        sign.setLine(3, Common.toStr(getPlayers().size()));
+        sign.setLine(3, toStr(getPlayers().size()));
         sign.update(true, false);
     }
 
@@ -369,7 +310,7 @@ public class Arena extends Identifiable<String> {
     }
 
     // Edited from FAWE
-    public void tpToRandom(@NotNull Player player) {
+    public void tpToRandom(Player player) {
         Location l = new Location(WORLD,
                 randInt(region[0], region[2]),
                 randInt(0, 250),
@@ -426,11 +367,10 @@ public class Arena extends Identifiable<String> {
         player.teleport(l);
     }
 
-    @NotNull
+
     @Override
-    public ArrayList<String> getDebug() {
-        ArrayList<String> r = new ArrayList<>();
-        r.add(toString());
+    public List<String> getDebug() {
+        List<String> r = super.getDebug();
 
         r.add("State: " + state.get());
 
@@ -452,7 +392,42 @@ public class Arena extends Identifiable<String> {
                     (int) l.getPitch(),
                     (int) l.getYaw()));
         }
+
         return r;
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map = super.serialize();
+        map.put("Region", region);
+        map.put("SignLoc", sign.getLocation());
+        return map;
+    }
+
+    @Override
+    public void deserialize(Map<String, Object> map) {
+        super.deserialize(map);
+        region = (Integer[]) map.get("Region");
+        Object o = map.get("SignLoc");
+        if (o instanceof Location) sign = (Sign) ((Location) o).getBlock().getState();
+        create();
+    }
+
+    @Override
+    public void configAdd() {
+        Set<Arena> set = toSet((Collection<Arena>) PLUGIN.getConfig().getList("Arenas"));
+        set.remove(this);
+        set.add(this);
+        PLUGIN.getConfig().set("Arenas", toList(set));
+        PLUGIN.saveConfig();
+    }
+
+    @Override
+    public void configRemove() {
+        Set<Arena> set = toSet((Collection<Arena>) PLUGIN.getConfig().getList("Arenas"));
+        set.remove(this);
+        PLUGIN.getConfig().set("Arenas", toList(set));
+        PLUGIN.saveConfig();
     }
 
     public enum State {

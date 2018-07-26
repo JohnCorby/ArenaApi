@@ -7,32 +7,29 @@ import com.johncorby.arenaapi.listener.Block;
 import com.johncorby.arenaapi.listener.Player;
 import com.johncorby.coreapi.CoreApiPlugin;
 import com.johncorby.coreapi.command.BaseCommand;
+import com.johncorby.coreapi.util.Common;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class ArenaApiPlugin extends CoreApiPlugin {
-    public static final String[] overridePlayers = {"johncorby", "funkymunky111"};
     public static World WORLD;
+    public static Set<String> OVERRIDE_PLAYERS;
+    public static Location lobby;
 
     public static Set<org.bukkit.entity.Player> getOverridePlayers() {
-        return Arrays.stream(overridePlayers)
-                .map(p -> Bukkit.getServer().getPlayer(p))
-                .collect(Collectors.toSet());
+        return Common.toSet(Common.map(OVERRIDE_PLAYERS, Bukkit::getPlayer));
     }
 
     @Override
     public void onEnable() {
         super.onEnable();
 
-        Arena.arenaEvents = getArenaEvents();
+        Arena.ARENA_EVENTS = getArenaEvents();
 
         // Set up config
         getConfig().options().copyDefaults(true);
@@ -41,11 +38,21 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         // Load stuff from config
         WORLD = getServer().getWorld(getConfig().getString("World"));
 
-        for (String name : Arena.arenaSection.getKeys(false)) {
-            ConfigurationSection arena = Arena.arenaSection.getConfigurationSection(name);
-            Integer[] region = arena.getIntegerList("Region").toArray(new Integer[0]);
-            Integer[] signLoc = arena.getIntegerList("SignLoc").toArray(new Integer[0]);
-            new Arena(name, region, signLoc);
+        OVERRIDE_PLAYERS = Common.toSet(getConfig().getStringList("OverridePlayers"));
+
+        lobby = (Location) PLUGIN.getConfig().get("Lobby");
+
+//        for (String name : Arena.ARENA_SECTION.getKeys(false)) {
+//            ConfigurationSection arena = Arena.ARENA_SECTION.getConfigurationSection(name);
+//            Integer[] region = arena.getIntegerList("Region").toArray(new Integer[0]);
+//            Location signLoc = (Location) arena.get("SignLoc");
+//            new Arena(name, region, signLoc);
+//        }
+        for (Object o : getConfig().getList("Arenas")) {
+            if (!(o instanceof Arena)) continue;
+            Arena a = (Arena) o;
+
+            MessageHandler.debug("Got arena " + a);
         }
     }
 
@@ -61,7 +68,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         }
     }
 
-    @NotNull
+
     @Override
     public BaseCommand[] getCommands() {
         return new BaseCommand[]{
@@ -78,7 +85,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         };
     }
 
-    @NotNull
+
     @Override
     public Listener[] getListeners() {
         return new Listener[]{
@@ -87,6 +94,6 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         };
     }
 
-    @NotNull
+
     public abstract ArenaEvents getArenaEvents();
 }

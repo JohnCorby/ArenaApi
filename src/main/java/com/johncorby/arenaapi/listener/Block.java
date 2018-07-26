@@ -1,26 +1,63 @@
 package com.johncorby.arenaapi.listener;
 
 import com.johncorby.arenaapi.arena.Arena;
-import com.johncorby.coreapi.util.Common;
 import com.johncorby.coreapi.util.MessageHandler;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.jetbrains.annotations.NotNull;
+
+import static com.johncorby.coreapi.CoreApiPlugin.PLUGIN;
 
 public class Block implements Listener {
-    // For setting virtualredstone signs
     @EventHandler
-    public void onBreak(@NotNull BlockBreakEvent event) {
+    public void onSignChange(SignChangeEvent event) {
+        Sign s = (Sign) event.getBlock().getState();
+
+        s.setLine(0, event.getLine(0));
+        s.setLine(1, event.getLine(1));
+        s.setLine(2, event.getLine(2));
+        s.setLine(3, event.getLine(3));
+        s.update(true, false);
+        onPlace(new BlockPlaceEvent(s.getBlock(), null, null, null, event.getPlayer(), true, null));
+    }
+
+
+    // For setting arena signs
+    @EventHandler
+    public void onPlace(BlockPlaceEvent event) {
         // Ignore if not sign
         if (!(event.getBlock().getState() instanceof Sign)) return;
         Sign s = (Sign) event.getBlock().getState();
 
-        // Ignore if not virtualredstone sign
-        if (!s.getLine(0).equalsIgnoreCase(ChatColor.YELLOW + "[GravityGuild]")) return;
+        // Ignore normal signs
+        if (!s.getLine(0).equalsIgnoreCase('[' + PLUGIN.getName() + ']')) return;
+
+        // Try to get arena
+        String aN = s.getLine(1);
+        Arena a = Arena.get(aN);
+        if (a == null) {
+            MessageHandler.error(event.getPlayer(), "Arena " + aN + " doesn't exist");
+            return;
+        }
+
+        // Set sign for arena
+        a.setSign(s);
+        MessageHandler.info(event.getPlayer(), "Set sign for " + aN);
+    }
+
+
+    // For unsetting arena signs
+    @EventHandler
+    public void onBreak(BlockBreakEvent event) {
+        // Ignore if not sign
+        if (!(event.getBlock().getState() instanceof Sign)) return;
+        Sign s = (Sign) event.getBlock().getState();
+
+        // Ignore normal signs
+        if (!s.getLine(0).equalsIgnoreCase(MessageHandler.prefix)) return;
 
         // Try to get arena
         Arena a = Arena.get(s.getLine(1));
@@ -32,35 +69,5 @@ public class Block implements Listener {
         // Remove sign from arena
         a.setSign(null);
         MessageHandler.info(event.getPlayer(), "Removed sign for " + a.get());
-    }
-
-
-    // For setting virtualredstone signs
-    @EventHandler
-    public void onSignChange(@NotNull SignChangeEvent event) {
-        // Ignore normal signs
-        if (!event.getLine(0).equalsIgnoreCase("[virtualredstone]")) return;
-
-        // Try to get arena
-        String aN = event.getLine(1);
-        Arena a = Arena.get(aN);
-        if (a == null) {
-            MessageHandler.error(event.getPlayer(), "Arena " + aN + " doesn't exist");
-            return;
-        }
-
-        // Ignore if arena already has sign
-        if (a.getSign() != null) {
-            MessageHandler.error(event.getPlayer(), "Arena " + aN + " already has sign");
-            return;
-        }
-
-        // Set sign for arena
-        event.setLine(0, ChatColor.YELLOW + "[GravityGuild]");
-        event.setLine(1, a.get());
-        event.setLine(2, a.getState().get());
-        event.setLine(3, Common.toStr(a.getPlayers().size()));
-        a.setSign((Sign) event.getBlock().getState());
-        MessageHandler.info(event.getPlayer(), "Set sign for " + aN);
     }
 }
