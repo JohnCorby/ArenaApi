@@ -6,9 +6,12 @@ import com.johncorby.coreapi.util.eventconversation.EventPrompt;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class SetRegion extends EventConversation {
     public final Integer[] region = new Integer[4];
+    @NotNull
     public final String name;
     private final boolean add;
 
@@ -19,9 +22,10 @@ public class SetRegion extends EventConversation {
         setFirstPrompt(new EventPrompt<BlockBreakEvent>(BlockBreakEvent.class,
                 this,
                 BlockBreakEvent::getPlayer) {
+            @NotNull
             @Override
             protected String getPromptText() {
-                return "Left click block to set pos 1";
+                return "Left click block to setSet pos 1";
             }
 
             @Override
@@ -29,13 +33,15 @@ public class SetRegion extends EventConversation {
                 return true;
             }
 
+            @Nullable
             @Override
             protected String getInvalidInputText(BlockBreakEvent input) {
                 return null;
             }
 
+            @Nullable
             @Override
-            protected EventPrompt acceptValidInput(BlockBreakEvent input) {
+            protected EventPrompt acceptValidInput(@NotNull BlockBreakEvent input) {
                 input.setCancelled(true);
 
                 Location l = input.getBlock().getLocation();
@@ -45,9 +51,10 @@ public class SetRegion extends EventConversation {
                 return new EventPrompt<BlockBreakEvent>(BlockBreakEvent.class,
                         SetRegion.this,
                         BlockBreakEvent::getPlayer) {
+                    @NotNull
                     @Override
                     protected String getPromptText() {
-                        return "Left click block to set pos 2";
+                        return "Left click block to setSet pos 2";
                     }
 
                     @Override
@@ -55,13 +62,15 @@ public class SetRegion extends EventConversation {
                         return true;
                     }
 
+                    @Nullable
                     @Override
                     protected String getInvalidInputText(BlockBreakEvent input) {
                         return null;
                     }
 
+                    @Nullable
                     @Override
-                    protected EventPrompt acceptValidInput(BlockBreakEvent input) {
+                    protected EventPrompt acceptValidInput(@NotNull BlockBreakEvent input) {
                         input.setCancelled(true);
 
                         Location l = input.getBlock().getLocation();
@@ -94,12 +103,13 @@ public class SetRegion extends EventConversation {
         create();
     }
 
+    @Nullable
     public static SetRegion get(Player identity) {
         return get(SetRegion.class, identity);
     }
 
     @Override
-    public boolean create() throws IllegalStateException {
+    public boolean create() {
         // Error if already setting arena
         if (stored()) {
             MessageHandler.error(identity, "You are already setting region for arena " + name);
@@ -121,65 +131,3 @@ public class SetRegion extends EventConversation {
         return super.create();
     }
 }
-
-/*
-class _SetRegion extends Identifiable<Player> {
-    public final Integer[] region = new Integer[4];
-    public int step;
-    public String name;
-    private boolean add;
-
-    public SetRegion(Player identity, String name, boolean add) {
-        super(identity);
-        create(identity, name, add);
-    }
-
-
-    public static SetRegion get(Player identity) {
-        return get(SetRegion.class, identity);
-    }
-
-    @Override
-    protected boolean create(Player identity) {
-        return true;
-    }
-
-    // Go to next step in region setting
-    public void next(int x, int z) {
-        switch (step) {
-            case 0: // Set first pos
-                region[0] = x;
-                region[1] = z;
-                MessageHandler.info(get(), "Left click block to set pos 2");
-                break;
-            case 1: // Set second pos
-                region[2] = x;
-                region[3] = z;
-                // Swap so 1st pos is min and 2nd is max
-                if (region[0] > region[2]) {
-                    Integer temp = region[0];
-                    region[0] = region[2];
-                    region[2] = temp;
-                }
-                if (region[1] > region[3]) {
-                    Integer temp = region[1];
-                    region[1] = region[3];
-                    region[3] = temp;
-                }
-
-                // Add of update arena region
-                if (add) {
-                    Arena arena = new Arena(name);
-                    arena.setRegion(region);
-                } else Arena.get(name).setRegion(region);
-
-                MessageHandler.info(get(), "Arena " + name + " region set");
-                dispose();
-                break;
-        }
-        step++;
-    }
-}
-*/
-
-

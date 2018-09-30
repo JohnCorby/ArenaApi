@@ -2,18 +2,20 @@ package com.johncorby.arenaapi.listener;
 
 import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.coreapi.util.MessageHandler;
+import com.johncorby.coreapi.util.Runnable;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.jetbrains.annotations.NotNull;
 
 import static com.johncorby.coreapi.CoreApiPlugin.PLUGIN;
 
-public class Block implements Listener {
+public class BlockListeners implements Listener {
     @EventHandler
-    public void onSignChange(SignChangeEvent event) {
+    public void onSignChange(@NotNull SignChangeEvent event) {
         Sign s = (Sign) event.getBlock().getState();
 
         s.setLine(0, event.getLine(0));
@@ -27,7 +29,7 @@ public class Block implements Listener {
 
     // For setting arena signs
     @EventHandler
-    public void onPlace(BlockPlaceEvent event) {
+    public void onPlace(@NotNull BlockPlaceEvent event) {
         // Ignore if not sign
         if (!(event.getBlock().getState() instanceof Sign)) return;
         Sign s = (Sign) event.getBlock().getState();
@@ -44,14 +46,19 @@ public class Block implements Listener {
         }
 
         // Set sign for arena
-        a.setSign(s);
+        new Runnable() {
+            @Override
+            public void run() {
+                a.setSign(s);
+            }
+        }.runTaskLater(0);
         MessageHandler.info(event.getPlayer(), "Set sign for " + aN);
     }
 
 
     // For unsetting arena signs
     @EventHandler
-    public void onBreak(BlockBreakEvent event) {
+    public void onBreak(@NotNull BlockBreakEvent event) {
         // Ignore if not sign
         if (!(event.getBlock().getState() instanceof Sign)) return;
         Sign s = (Sign) event.getBlock().getState();

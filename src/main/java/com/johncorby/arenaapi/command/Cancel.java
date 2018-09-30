@@ -4,6 +4,7 @@ import com.johncorby.arenaapi.arena.SetRegion;
 import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class Cancel extends BaseCommand {
     public Cancel() {
@@ -11,7 +12,7 @@ public class Cancel extends BaseCommand {
     }
 
     @Override
-    public boolean onCommand(Player sender, String[] args) {
+    public boolean onCommand(@NotNull Player sender, String[] args) {
         // Error if setting region
         SetRegion sR = SetRegion.get(sender);
         if (sR == null) {

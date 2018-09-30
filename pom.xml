@@ -19,14 +19,14 @@
             <artifactId>worldedit</artifactId>
             <version>RELEASE</version>
             <scope>system</scope>
-            <systemPath>E:/Everything Else/Singleplayer Server/plugins/WorldEdit.jar</systemPath>
+            <systemPath>D:/Everything Else/Singleplayer Server/plugins/WorldEdit.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.boydti</groupId>
             <artifactId>fawe</artifactId>
             <version>RELEASE</version>
             <scope>system</scope>
-            <systemPath>E:/Everything Else/Singleplayer
+            <systemPath>D:/Everything Else/Singleplayer
                 Server/plugins/FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar
             </systemPath>
         </dependency>
@@ -37,10 +37,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>10</source>
+                    <target>10</target>
                 </configuration>
             </plugin>
         </plugins>

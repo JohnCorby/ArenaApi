@@ -4,6 +4,7 @@ import com.boydti.fawe.object.schematic.Schematic;
 import com.boydti.fawe.util.TaskManager;
 import com.johncorby.arenaapi.command.Lobby;
 import com.johncorby.coreapi.util.Common;
+import com.johncorby.coreapi.util.Config;
 import com.johncorby.coreapi.util.MessageHandler;
 import com.johncorby.coreapi.util.storedclass.ConfigIdent;
 import com.johncorby.coreapi.util.storedclass.Identifiable;
@@ -20,6 +21,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,9 +39,12 @@ import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
 
 public class Arena extends ConfigIdent<String> {
     public static ArenaEvents ARENA_EVENTS;
+    @NotNull
     private State state = State.STOPPED;
 
+    @Nullable
     private Sign sign;
+    @Nullable
     private Integer[] region;
 
     public Arena(String identity) {
@@ -46,16 +52,18 @@ public class Arena extends ConfigIdent<String> {
         create();
     }
 
-    public Arena(Map<String, Object> map) {
+    public Arena(@NotNull Map<String, Object> map) {
         super(map);
     }
 
+    @Nullable
     public static Arena get(String identity) {
         return get(Arena.class, identity);
     }
 
+    @NotNull
     public static Set<Arena> getArenas() {
-        return getClasses().get(Arena.class);
+        return objects.get(Arena.class);
     }
 
     // Get arena names
@@ -64,32 +72,25 @@ public class Arena extends ConfigIdent<String> {
     }
 
     // Get arena entity is in
-    public static Arena arenaIn(Entity entity) {
+    @Nullable
+    public static Arena arenaIn(@Nullable Entity entity) {
         if (entity == null || entity.getWorld() != WORLD) return null;
         for (Arena a : getArenas())
             if (a.contains(entity)) return a;
         return null;
     }
 
-    @Override
-    public boolean dispose() {
-        if (!super.dispose()) return false;
-        configRemove();
-
-        new File(PLUGIN.getDataFolder() + "/" + get() + ".schematic").delete();
-
-        return true;
-    }
-
+    @NotNull
     public Set<Entity> getEntities() {
         return toSet(filter(WORLD.getEntities(), this::contains));
     }
 
+    @NotNull
     public Set<Player> getPlayers() {
         return toSet(map(filter(getEntities(), e -> e instanceof Player), e -> (Player) e));
     }
 
-    public boolean contains(Entity entity) {
+    public boolean contains(@Nullable Entity entity) {
         if (entity == null) return false;
         Integer[] l = {entity.getLocation().getBlockX(), entity.getLocation().getBlockZ()};
         return state != State.STOPPED &&
@@ -114,11 +115,12 @@ public class Arena extends ConfigIdent<String> {
     }
 
 
+    @NotNull
     public State getState() {
         return state;
     }
 
-    public void setState(State state) {
+    public void setState(@NotNull State state) {
         if (this.state == state) return;
         switch (state) {
             case OPEN:
@@ -144,11 +146,12 @@ public class Arena extends ConfigIdent<String> {
         updateSign();
     }
 
+    @Nullable
     public Integer[] getRegion() {
         return region;
     }
 
-    public void setRegion(Integer[] region) {
+    public void setRegion(@Nullable Integer[] region) {
         if (region == null) return;
 
         this.region = region;
@@ -158,13 +161,12 @@ public class Arena extends ConfigIdent<String> {
     }
 
 
+    @Nullable
     public Sign getSign() {
         return sign;
     }
 
-    public void setSign(Sign sign) {
-        if (sign == null) return;
-
+    public void setSign(@Nullable Sign sign) {
         this.sign = sign;
         updateSign();
         configAdd();
@@ -310,7 +312,7 @@ public class Arena extends ConfigIdent<String> {
     }
 
     // Edited from FAWE
-    public void tpToRandom(Player player) {
+    public void tpToRandom(@NotNull Player player) {
         Location l = new Location(WORLD,
                 randInt(region[0], region[2]),
                 randInt(0, 250),
@@ -399,35 +401,32 @@ public class Arena extends ConfigIdent<String> {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = super.serialize();
-        map.put("Region", region);
-        map.put("SignLoc", sign.getLocation());
+        map.put("Region", region == null ? null : toList(region));
+        map.put("SignLoc", sign == null ? null : sign.getLocation());
         return map;
     }
 
     @Override
-    public void deserialize(Map<String, Object> map) {
+    public void deserialize(@NotNull Map<String, Object> map) {
         super.deserialize(map);
-        region = (Integer[]) map.get("Region");
+        region = toArray(new Integer[0], (Collection<Integer>) map.get("Region"));
         Object o = map.get("SignLoc");
-        if (o instanceof Location) sign = (Sign) ((Location) o).getBlock().getState();
-        create();
+        sign = o == null ? null : (Sign) ((Location) o).getBlock().getState();
     }
 
     @Override
     public void configAdd() {
-        Set<Arena> set = toSet((Collection<Arena>) PLUGIN.getConfig().getList("Arenas"));
-        set.remove(this);
-        set.add(this);
-        PLUGIN.getConfig().set("Arenas", toList(set));
+        Config.removeSet("Arenas", this);
+        Config.addSet("Arenas", this);
         PLUGIN.saveConfig();
     }
 
     @Override
-    public void configRemove() {
-        Set<Arena> set = toSet((Collection<Arena>) PLUGIN.getConfig().getList("Arenas"));
-        set.remove(this);
-        PLUGIN.getConfig().set("Arenas", toList(set));
+    public boolean configRemove() {
+        Config.removeSet("Arenas", this);
         PLUGIN.saveConfig();
+        new File(PLUGIN.getDataFolder() + "/" + identity + ".schematic").delete();
+        return dispose();
     }
 
     public enum State {

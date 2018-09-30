@@ -6,13 +6,14 @@ import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class Lobby extends BaseCommand {
     public Lobby() {
         super("Teleport to lobby", "", "");
     }
 
-    public static boolean lobby(Player player) {
+    public static boolean lobby(@NotNull Player player) {
         // Error if no lobby loc
         Location lL = ArenaApiPlugin.lobby;
         if (lL == null) {
@@ -26,7 +27,7 @@ public class Lobby extends BaseCommand {
     }
 
     @Override
-    public boolean onCommand(Player sender, String[] args) {
+    public boolean onCommand(@NotNull Player sender, String[] args) {
         // Leave arena if in one
         Arena aI = Arena.arenaIn(sender);
         if (aI != null) return aI.remove(sender);

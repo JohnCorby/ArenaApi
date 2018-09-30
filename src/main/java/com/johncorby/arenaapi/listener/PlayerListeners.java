@@ -10,10 +10,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
-public class Player implements Listener {
+public class PlayerListeners implements Listener {
     @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
+    public void onInteract(@NotNull PlayerInteractEvent event) {
         // If right clicked block
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             // Ignore if not sign
@@ -31,7 +32,7 @@ public class Player implements Listener {
 
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
+    public void onQuit(@NotNull PlayerQuitEvent event) {
         org.bukkit.entity.Player player = event.getPlayer();
         // Try to get arena and make player leave it
         Arena aI = Arena.arenaIn(player);
@@ -41,7 +42,7 @@ public class Player implements Listener {
 
     // Notify about bugs being present
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(@NotNull PlayerJoinEvent event) {
         new Runnable() {
             @Override
             public void run() {

@@ -5,6 +5,7 @@ import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.command.TabCompleteHandler;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class SetRegion extends BaseCommand {
     public SetRegion() {
@@ -13,7 +14,7 @@ public class SetRegion extends BaseCommand {
     }
 
     @Override
-    public boolean onCommand(Player sender, String[] args) {
+    public boolean onCommand(@NotNull Player sender, @NotNull String[] args) {
         // Error if no name given
         if (args.length == 0) {
             MessageHandler.error(sender, "You must supply an arena name");

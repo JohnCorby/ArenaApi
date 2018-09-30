@@ -3,16 +3,19 @@ package com.johncorby.arenaapi;
 import com.johncorby.arenaapi.arena.Arena;
 import com.johncorby.arenaapi.arena.ArenaEvents;
 import com.johncorby.arenaapi.command.*;
-import com.johncorby.arenaapi.listener.Block;
-import com.johncorby.arenaapi.listener.Player;
+import com.johncorby.arenaapi.listener.BlockListeners;
+import com.johncorby.arenaapi.listener.PlayerListeners;
 import com.johncorby.coreapi.CoreApiPlugin;
 import com.johncorby.coreapi.command.BaseCommand;
 import com.johncorby.coreapi.util.Common;
+import com.johncorby.coreapi.util.Config;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -31,6 +34,8 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
 
         Arena.ARENA_EVENTS = getArenaEvents();
 
+        ConfigurationSerialization.registerClass(Arena.class);
+
         // Set up config
         getConfig().options().copyDefaults(true);
         saveConfig();
@@ -42,18 +47,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
 
         lobby = (Location) PLUGIN.getConfig().get("Lobby");
 
-//        for (String name : Arena.ARENA_SECTION.getKeys(false)) {
-//            ConfigurationSection arena = Arena.ARENA_SECTION.getConfigurationSection(name);
-//            Integer[] region = arena.getIntegerList("Region").toArray(new Integer[0]);
-//            Location signLoc = (Location) arena.get("SignLoc");
-//            new Arena(name, region, signLoc);
-//        }
-        for (Object o : getConfig().getList("Arenas")) {
-            if (!(o instanceof Arena)) continue;
-            Arena a = (Arena) o;
-
-            MessageHandler.debug("Got arena " + a);
-        }
+        Config.getSet("Arenas");
     }
 
     @Override
@@ -69,6 +63,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
     }
 
 
+    @NotNull
     @Override
     public BaseCommand[] getCommands() {
         return new BaseCommand[]{
@@ -86,14 +81,16 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
     }
 
 
+    @NotNull
     @Override
     public Listener[] getListeners() {
         return new Listener[]{
-                new Block(),
-                new Player(),
+                new BlockListeners(),
+                new PlayerListeners(),
         };
     }
 
 
+    @NotNull
     public abstract ArenaEvents getArenaEvents();
 }
