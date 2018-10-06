@@ -7,7 +7,6 @@ import com.johncorby.arenaapi.listener.BlockListeners;
 import com.johncorby.arenaapi.listener.PlayerListeners;
 import com.johncorby.coreapi.CoreApiPlugin;
 import com.johncorby.coreapi.command.BaseCommand;
-import com.johncorby.coreapi.util.Common;
 import com.johncorby.coreapi.util.Config;
 import com.johncorby.coreapi.util.MessageHandler;
 import org.bukkit.Bukkit;
@@ -19,13 +18,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+import static com.johncorby.coreapi.util.Collections.map;
+import static com.johncorby.coreapi.util.Conversions.toSet;
+
 public abstract class ArenaApiPlugin extends CoreApiPlugin {
     public static World WORLD;
     public static Set<String> OVERRIDE_PLAYERS;
     public static Location lobby;
 
     public static Set<org.bukkit.entity.Player> getOverridePlayers() {
-        return Common.toSet(Common.map(OVERRIDE_PLAYERS, Bukkit::getPlayer));
+        return toSet(map(OVERRIDE_PLAYERS, Bukkit::getPlayer));
     }
 
     @Override
@@ -43,7 +45,7 @@ public abstract class ArenaApiPlugin extends CoreApiPlugin {
         // Load stuff from config
         WORLD = getServer().getWorld(getConfig().getString("World"));
 
-        OVERRIDE_PLAYERS = Common.toSet(getConfig().getStringList("OverridePlayers"));
+        OVERRIDE_PLAYERS = toSet(getConfig().getStringList("OverridePlayers"));
 
         lobby = (Location) PLUGIN.getConfig().get("Lobby");
 

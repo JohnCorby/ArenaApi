@@ -3,9 +3,9 @@ package com.johncorby.arenaapi.arena;
 import com.boydti.fawe.object.schematic.Schematic;
 import com.boydti.fawe.util.TaskManager;
 import com.johncorby.arenaapi.command.Lobby;
-import com.johncorby.coreapi.util.Common;
 import com.johncorby.coreapi.util.Config;
 import com.johncorby.coreapi.util.MessageHandler;
+import com.johncorby.coreapi.util.Misc;
 import com.johncorby.coreapi.util.storedclass.ConfigIdent;
 import com.johncorby.coreapi.util.storedclass.Identifiable;
 import com.sk89q.worldedit.Vector;
@@ -34,7 +34,10 @@ import java.util.Set;
 import static com.johncorby.arenaapi.ArenaApiPlugin.WORLD;
 import static com.johncorby.arenaapi.ArenaApiPlugin.getOverridePlayers;
 import static com.johncorby.coreapi.CoreApiPlugin.PLUGIN;
-import static com.johncorby.coreapi.util.Common.*;
+import static com.johncorby.coreapi.util.Collections.filter;
+import static com.johncorby.coreapi.util.Collections.map;
+import static com.johncorby.coreapi.util.Conversions.*;
+import static com.johncorby.coreapi.util.Misc.randInt;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
 
 public class Arena extends ConfigIdent<String> {
@@ -260,7 +263,7 @@ public class Arena extends ConfigIdent<String> {
         //updateSign();
 
         TaskManager.IMP.async(() -> {
-            long time = Common.time(() -> {
+            long time = Misc.time(() -> {
                 try {
                     // Remove entities so they aren't saved in the schematic
                     // Except not players because that causes issues
@@ -292,7 +295,7 @@ public class Arena extends ConfigIdent<String> {
         //updateSign();
 
         TaskManager.IMP.async(() -> {
-            long time = Common.time(() -> {
+            long time = Misc.time(() -> {
                 try {
                     File file = new File(PLUGIN.getDataFolder() + "/" + get() + ".schematic");
                     World world = new BukkitWorld(WORLD);
@@ -409,7 +412,7 @@ public class Arena extends ConfigIdent<String> {
     @Override
     public void deserialize(@NotNull Map<String, Object> map) {
         super.deserialize(map);
-        region = toArray(new Integer[0], (Collection<Integer>) map.get("Region"));
+        region = ((Collection<Integer>) map.get("Region")).toArray(new Integer[0]);
         Object o = map.get("SignLoc");
         sign = o == null ? null : (Sign) ((Location) o).getBlock().getState();
     }

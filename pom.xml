@@ -26,8 +26,7 @@
             <artifactId>fawe</artifactId>
             <version>RELEASE</version>
             <scope>system</scope>
-            <systemPath>D:/Everything Else/Singleplayer
-                Server/plugins/FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar
+            <systemPath>D:/Everything Else/Singleplayer Server/plugins/FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar
             </systemPath>
         </dependency>
     </dependencies>
