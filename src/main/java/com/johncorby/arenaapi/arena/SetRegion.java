@@ -111,7 +111,7 @@ public class SetRegion extends EventConversation {
     @Override
     public boolean create() {
         // Error if already setting arena
-        if (stored()) {
+        if (exists()) {
             MessageHandler.error(identity, "You are already setting region for arena " + name);
             return false;
         }

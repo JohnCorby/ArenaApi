@@ -4,8 +4,8 @@ World: gg_arenas
 # What players can join arenas when they are running
 # And have them start with only themselves in it
 OverridePlayers:
-- johncorby
-- funkymunky111
+  - johncorby
+  - funkymunky111
 
 # Do not touch these
 Lobby: []

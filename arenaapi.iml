@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_10">
+<module type="JAVA_MODULE" version="4">
+  <component name="ExternalSystem" externalSystem="Maven" />
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_11">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -12,25 +13,5 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="coreapi" />
-    <orderEntry type="library" name="Maven: org.spigotmc:spigot:1.12.2-R0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains:annotations:16.0.2" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.sk89q:worldedit:RELEASE">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../plugins/WorldEdit.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Maven: com.boydti:fawe:RELEASE">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../plugins/FastAsyncWorldEdit-bukkit-18.05.25-4049014-1138-20.1.8.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
 </module>
